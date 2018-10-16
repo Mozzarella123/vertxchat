@@ -1,0 +1,60 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
+}
+
+group 'vertx'
+version '1.0-SNAPSHOT'
+sourceCompatibility = '1.8'
+mainClassName = 'io.vertx.core.Launcher'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+def vertxVersion = '3.5.2'
+def mainVerticleName = 'io.vertx.starter.MainVerticle'
+def watchForChange = 'src/**/*'
+def doOnChange = 'gradlew classes'
+
+dependencies {
+    compile "io.vertx:vertx-core:$vertxVersion"
+    compile group: 'io.vertx', name: 'vertx-web', version: vertxVersion
+    compile 'io.vertx:vertx-config:3.5.4'
+    compile group: 'io.vertx', name: 'vertx-jdbc-client', version: vertxVersion
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta2'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j18-impl', version: '2.11.1'
+    compile 'io.vertx:vertx-mysql-postgresql-client:3.5.4'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    testCompile "junit:junit:4.12"
+    testCompile "io.vertx:vertx-unit:$vertxVersion"
+}
+
+shadowJar {
+    classifier = 'fat'
+    manifest {
+        attributes "Main-Verticle": mainVerticleName
+    }
+
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+}
+task buildFront(type: Exec) {
+    workingDir 'src/main/javascript/'
+    commandLine "cmd", "npm build"
+}
+
+run {
+    args = [
+            'run',
+            mainVerticleName,
+            "--no-daemon",
+            "--redeploy=$watchForChange",
+            "--launcher-class=$mainClassName",
+            "--on-redeploy=$doOnChange",
+            "-conf src/main/conf/config.json"
+    ]
+}

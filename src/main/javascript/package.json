@@ -1,0 +1,39 @@
+{
+  "name": "mobxtest",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "start:dev": "webpack-dev-server --watch-content-base",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@livechat/ui-kit": "^0.2.13",
+    "@types/node": "^7.0.7",
+    "@types/react": "^16.4.15",
+    "@types/react-dom": "^16.0.8",
+    "@types/sockjs-client": "^1.1.0",
+    "@types/vertx3-eventbus-client": "^3.5.0",
+    "mobx": "^5.5.0",
+    "mobx-react": "^5.2.8",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
+    "vertx3-eventbus-client": "^3.5.4"
+  },
+  "devDependencies": {
+    "awesome-typescript-loader": "^5.2.1",
+    "css-loader": "^1.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.9.3",
+    "sass-loader": "^7.1.0",
+    "source-map-loader": "^0.2.4",
+    "style-loader": "^0.23.0",
+    "typescript": "^3.1.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.9"
+  }
+}
