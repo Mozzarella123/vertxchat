@@ -55,6 +55,6 @@ run {
             "--redeploy=$watchForChange",
             "--launcher-class=$mainClassName",
             "--on-redeploy=$doOnChange",
-            "-conf src/main/conf/config.json"
+
     ]
 }

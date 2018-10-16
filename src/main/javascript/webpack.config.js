@@ -5,7 +5,7 @@ module.exports = {
   entry: "./src/index.tsx",
   output: {
     filename: "bundle.js",
-    path: path.resolve('../resources/webroot/')
+    path: path.resolve('../resources/webroot/assets/')
   },
   watch: true,
   optimization: {},
