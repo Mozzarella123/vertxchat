@@ -1,18 +1,23 @@
-package io.vertx.starter;
+package vertx.chat.server.http;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.SelfSignedCertificate;
+import io.vertx.ext.auth.KeyStoreOptions;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vertx.chat.server.ChatServerFactory;
+import vertx.chat.server.HandlerFactory;
 
 public class HttpServerVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
@@ -40,12 +45,18 @@ public class HttpServerVerticle extends AbstractVerticle {
 //      if (event.type() == BridgeEventType.PUBLISH)
 //        publishEvent(event);
         });
-        //httpServer = vertx.createHttpServer();
+        JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
+                .setKeyStore(new KeyStoreOptions()
+                        .setPath("src/main/resources/keystore.jceks")
+                        .setType("jceks")
+                        .setPassword("secret")));
+
         Router router = Router.router(vertx);
+        router.route().handler(JWTAuthHandler.create(jwtAuth, "/api/token"));
+        router.get("/token").handler(context -> {
+                });
         router.get("/*").handler(StaticHandler.create());
-        //router.route("/assets/*").handler(StaticHandler.create().setCachingEnabled(false));
         router.route("/eventbus/*").handler(sockJSHandler);
-        LOGGER.info(config().toString());
         httpServer
                 .requestHandler(router::accept)
                 .listen(config().getInteger("http.port"), ar -> {
@@ -58,5 +69,16 @@ public class HttpServerVerticle extends AbstractVerticle {
                         startFuture.fail(ar.cause());
                     }
                 });
+    }
+    @Override
+    public void stop(Future<Void> future) {
+        httpServer.close(ar -> {
+            if (ar.succeeded()) {
+                LOGGER.info("HTTP server successfully stopped on port {}", config().getInteger("http.port"));
+                future.complete();
+            } else {
+                future.fail(ar.cause());
+            }
+        });
     }
 }

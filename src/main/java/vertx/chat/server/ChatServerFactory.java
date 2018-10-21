@@ -1,4 +1,4 @@
-package io.vertx.starter;
+package vertx.chat.server;
 
 import java.util.Map;
 

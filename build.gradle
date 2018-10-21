@@ -26,7 +26,14 @@ dependencies {
     compile group: 'io.vertx', name: 'vertx-jdbc-client', version: vertxVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta2'
     compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j18-impl', version: '2.11.1'
+    compile group: 'io.vertx', name: 'vertx-auth-jwt', version:  vertxVersion
+    compile group: 'io.vertx', name: 'vertx-auth-jdbc', version:  vertxVersion
+    compile group: 'io.vertx', name: 'vertx-service-proxy', version:  vertxVersion
+    compile "io.vertx:vertx-service-proxy:3.5.2:processor"
+    compile group: 'io.vertx', name: 'vertx-codegen', version:  vertxVersion
+
     compile 'io.vertx:vertx-mysql-postgresql-client:3.5.4'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.44'
     implementation 'com.google.code.gson:gson:2.8.5'
     testCompile "junit:junit:4.12"
     testCompile "io.vertx:vertx-unit:$vertxVersion"
@@ -46,7 +53,23 @@ task buildFront(type: Exec) {
     workingDir 'src/main/javascript/'
     commandLine "cmd", "npm build"
 }
-
+task annotationProcessing(type: JavaCompile, group: 'build') { // codegen
+    source = sourceSets.main.java
+    classpath = configurations.compile + configurations.compileOnly
+    destinationDir = project.file('src/main/generated')
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor", "io.vertx.codegen.CodeGenProcessor",
+            "-AoutputDirectory=${project.projectDir}/src/main"
+    ]
+}
+sourceSets {
+    main {
+        java {
+            srcDirs += 'src/main/generated'
+        }
+    }
+}
 run {
     args = [
             'run',
