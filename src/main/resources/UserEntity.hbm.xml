@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="vertx.chat.server.database.Entity.UserEntity" table="user" schema="chat">
+        <id name="id">
+            <column name="id" sql-type="int(11)"/>
+        </id>
+        <property name="password">
+            <column name="password" sql-type="varchar(255)" not-null="true"/>
+        </property>
+        <property name="passwordSalt">
+            <column name="password_salt" sql-type="varchar(255)" not-null="true"/>
+        </property>
+        <property name="username">
+            <column name="username" sql-type="varchar(255)" not-null="true"/>
+        </property>
+        <property name="emailConfirmed">
+            <column name="emailConfirmed" sql-type="tinyint(1)" not-null="true"/>
+        </property>
+        <property name="email">
+            <column name="email" sql-type="varchar(255)" not-null="true"/>
+        </property>
+        <set name="messagesById" inverse="true">
+            <key>
+                <column name="from" not-null="true"/>
+            </key>
+            <one-to-many not-found="ignore" class="vertx.chat.server.database.Entity.MessagesEntity"/>
+        </set>
+        <set name="messagesById_0" inverse="true">
+            <key>
+                <column name="to" not-null="true"/>
+            </key>
+            <one-to-many not-found="ignore" class="vertx.chat.server.database.Entity.MessagesEntity"/>
+        </set>
+    </class>
+</hibernate-mapping>

@@ -2,6 +2,7 @@
 build/
 bin/
 .settings
+src/main/generated 
 
 # Ignore VertX file cache
 .vertx/

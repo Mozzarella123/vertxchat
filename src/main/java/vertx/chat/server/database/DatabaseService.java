@@ -18,6 +18,9 @@ public interface DatabaseService {
     @Fluent
     DatabaseService fetchUser(String id,Handler<AsyncResult<JsonObject>> resultHandler);
 
+    @Fluent
+    DatabaseService createUser(String username, String password, String email);
+
     static DatabaseService createProxy(Vertx vertx,
                                        String address) {
         return new DatabaseServiceVertxEBProxy(vertx, address);

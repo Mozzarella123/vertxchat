@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="vertx.chat.server.database.Entity.MessagesEntity" table="messages" schema="chat">
+        <id name="id">
+            <column name="id" sql-type="int(11)"/>
+        </id>
+        <property name="content">
+            <column name="content" sql-type="varchar(255)" not-null="true"/>
+        </property>
+        <many-to-one name="userByFrom" class="vertx.chat.server.database.Entity.UserEntity">
+            <column name="from" not-null="true"/>
+        </many-to-one>
+        <many-to-one name="userByTo" class="vertx.chat.server.database.Entity.UserEntity">
+            <column name="to" not-null="true"/>
+        </many-to-one>
+    </class>
+</hibernate-mapping>

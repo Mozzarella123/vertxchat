@@ -23,11 +23,19 @@ public class DatabaseServiceImpl implements DatabaseService {
             } else {
                 //todo SQL queries
                 SQLConnection connection = ar.result();
-                connection.execute("CREATE TABLE IF NOT EXISTS pages " +
-                        "(Id INT," +
-                        "Name VARCHAR(255), " +
-                        "Content LONGBLOB, " +
-                        "PRIMARY KEY(Id));", create -> {
+                connection.execute("CREATE TABLE IF NOT EXISTS messages\n" +
+                        "(\n" +
+                        "  content varchar(255) null,\n" +
+                        "  id      int auto_increment,\n" +
+                        "  `from`  int          null,\n" +
+                        "  `to`    int          null,\n" +
+                        "  constraint messages_id_uindex\n" +
+                        "  unique (id),\n" +
+                        "  constraint messages_user_id_fk\n" +
+                        "  foreign key (`from`) references user (id),\n" +
+                        "  constraint messages_user_id_fk_2\n" +
+                        "  foreign key (`to`) references user (id)\n" +
+                        ");", create -> {
                     connection.close();
                     if (create.failed()) {
                         LOGGER.error("Database preparation error", create.cause());
@@ -58,6 +66,12 @@ public class DatabaseServiceImpl implements DatabaseService {
                LOGGER.error("Database query error", res.cause());
            }
         });
+        return this;
+    }
+
+    @Override
+    public DatabaseService createUser(String username, String password, String email) {
+
         return this;
     }
 }

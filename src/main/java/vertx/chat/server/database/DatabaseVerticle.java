@@ -22,10 +22,12 @@ public class DatabaseVerticle extends AbstractVerticle {
         JsonObject mySQLClientConfig = new JsonObject()
                 .put("user", "root")
                 .put("password", "root")
-                .put("url", config().getString(CONFIG_DB_JDBC_URL, "jdbc:mysql://localhost:3306/testdb"))
+                .put("url", config().getString(CONFIG_DB_JDBC_URL, "jdbc:mysql://localhost:3306/chat"))
                 .put("driver_class", config().getString(CONFIG_DB_JDBC_DRIVER_CLASS, "com.mysql.jdbc.Driver"))
                 .put("max_pool_size", config().getInteger(CONFIG_DB_JDBC_MAX_POOL_SIZE, 30));
+
         dbClient = JDBCClient.createShared(vertx, mySQLClientConfig);
+
         DatabaseService.create(dbClient, ready -> {
             if (ready.succeeded()) {
                 ServiceBinder binder = new ServiceBinder(vertx);

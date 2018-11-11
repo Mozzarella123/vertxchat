@@ -8,12 +8,8 @@ class App extends React.Component {
 
   private eventBusService: EventBusService;
 
-  constructor(props) {
-    super(props);
-  }
   componentDidMount() {
     this.eventBusService = new EventBusService();
-    console.log("mounted");
     this.eventBusService.connect((err, msg) => this.chatMsgRecieved(err, msg));
   }
 

@@ -15,7 +15,7 @@ repositories {
 }
 
 def vertxVersion = '3.5.2'
-def mainVerticleName = 'io.vertx.starter.MainVerticle'
+def mainVerticleName = 'vertx.chat.server.MainVerticle'
 def watchForChange = 'src/**/*'
 def doOnChange = 'gradlew classes'
 
@@ -29,12 +29,14 @@ dependencies {
     compile group: 'io.vertx', name: 'vertx-auth-jwt', version:  vertxVersion
     compile group: 'io.vertx', name: 'vertx-auth-jdbc', version:  vertxVersion
     compile group: 'io.vertx', name: 'vertx-service-proxy', version:  vertxVersion
+    compile group: 'io.vertx', name: 'vertx-web-client', version:  vertxVersion
+//    compile 'io.vertx:vertx-web-client:3.5.4'
     compile "io.vertx:vertx-service-proxy:3.5.2:processor"
     compile group: 'io.vertx', name: 'vertx-codegen', version:  vertxVersion
-
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.3.7.Final'
     compile 'io.vertx:vertx-mysql-postgresql-client:3.5.4'
     compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.44'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    compile 'com.google.code.gson:gson:2.8.5'
     testCompile "junit:junit:4.12"
     testCompile "io.vertx:vertx-unit:$vertxVersion"
 }

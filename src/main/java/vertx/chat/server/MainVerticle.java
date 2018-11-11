@@ -1,6 +1,6 @@
 package vertx.chat.server;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -9,12 +9,12 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.SQLClient;
-import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.web.handler.sockjs.BridgeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import vertx.chat.server.database.DatabaseVerticle;
+import vertx.chat.server.http.AuthInitializerVerticle;
 import vertx.chat.server.http.HttpServerVerticle;
 
 import java.util.Calendar;
@@ -48,40 +48,33 @@ public class MainVerticle extends AbstractVerticle {
       } else {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
         deploymentOptions.setConfig(ar.result());
-        vertx.deployVerticle(HttpServerVerticle.class.getName(), deploymentOptions);
-      }
-    });
-    startFuture.complete();
+        Future<String> dbVerticleDeployment = Future.future();
+        vertx.deployVerticle(new DatabaseVerticle(), dbVerticleDeployment);
 
-  }
-
-  private Future<Void> prepareDatabase() {
-    Future<Void> future = Future.future();
-    JsonObject mySQLClientConfig = new JsonObject()
-      .put("host", "localhost")
-      .put("username", "root")
-      .put("password", "root");
-    dbClient = JDBCClient.createShared(vertx, mySQLClientConfig);
-    dbClient.getConnection(ar -> {
-      if (ar.failed()) {
-        LOGGER.error("Could not open a database connection", ar.cause());
-        future.fail(ar.cause());
-      } else {
-        SQLConnection connection = ar.result();
-        connection.execute(SQL_CREATE_PAGES_TABLE, create -> {
-          connection.close();
-          if (create.failed()) {
-            LOGGER.error("Database preparation error", create.cause());
-            future.fail(create.cause());
+        dbVerticleDeployment.compose(id -> {
+          Future<String> authInitDeployment = Future.future();
+          vertx.deployVerticle(new AuthInitializerVerticle(), authInitDeployment);
+          return authInitDeployment;
+        }).compose(id -> {
+          Future<String> httpVerticleDeployment = Future.future();
+          vertx.deployVerticle(
+                  HttpServerVerticle.class.getName(),
+                  deploymentOptions.setInstances(2),
+                  httpVerticleDeployment.completer());
+          return httpVerticleDeployment;
+        }).setHandler(ares -> {
+          if (ares.succeeded()) {
+            startFuture.complete();
           } else {
-            future.complete();
+            startFuture.fail(ares.cause());
           }
         });
+
       }
     });
 
-    return future;
   }
+
 
   private boolean publishEvent(BridgeEvent event) {
     if (event.getRawMessage() != null
