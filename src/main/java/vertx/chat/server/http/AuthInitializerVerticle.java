@@ -53,6 +53,7 @@ public class AuthInitializerVerticle extends AbstractVerticle {
 
 
         dbClient.getConnection(car -> {
+
             if (car.succeeded()) {
                 SQLConnection connection = car.result();
                 connection.batch(schemaCreation, ar -> schemaCreationHandler(dataInit, connection, ar));

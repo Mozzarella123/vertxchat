@@ -19,7 +19,7 @@ public interface DatabaseService {
     DatabaseService fetchUser(String id,Handler<AsyncResult<JsonObject>> resultHandler);
 
     @Fluent
-    DatabaseService createUser(String username, String password, String email);
+    DatabaseService createUser(String username, String password, String passwordSalt, String email,Handler<AsyncResult<JsonObject>> resultHandler);
 
     static DatabaseService createProxy(Vertx vertx,
                                        String address) {

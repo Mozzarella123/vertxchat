@@ -54,8 +54,8 @@ public class MainVerticleTest {
         HttpClient client = vertx.createHttpClient(options);
         WebClient webClient = WebClient.wrap(client);
         MultiMap form = MultiMap.caseInsensitiveMultiMap();
-        form.set("username", "root");
-        form.set("password", "admin");
+        form.set("username", "fool");
+        form.set("password", "123");
         form.set("return_url", "/");
         webClient.post(8082, "localhost","/login-auth")
                 .sendForm(form, ar -> {

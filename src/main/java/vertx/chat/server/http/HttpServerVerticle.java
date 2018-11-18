@@ -19,25 +19,23 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import vertx.chat.server.ChatServerFactory;
-import vertx.chat.server.HandlerFactory;
+import vertx.chat.server.database.DatabaseService;
+import vertx.chat.server.http.routers.UserRouter;
 
-import static vertx.chat.server.database.DatabaseVerticle.CONFIG_DB_JDBC_DRIVER_CLASS;
-import static vertx.chat.server.database.DatabaseVerticle.CONFIG_DB_JDBC_MAX_POOL_SIZE;
-import static vertx.chat.server.database.DatabaseVerticle.CONFIG_DB_JDBC_URL;
+import static vertx.chat.server.database.DatabaseVerticle.*;
 
 public class HttpServerVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
     private final String inBoundAdress = "chat.to.server";
     private final String outBoundAdress = "server.to.chat";
-    HandlerFactory factory;
     private HttpServer httpServer;
+    private DatabaseService dbService;
 
     @Override
     public void start(Future<Void> startFuture) throws Exception {
-        factory = new ChatServerFactory(null);
         SelfSignedCertificate certificate = SelfSignedCertificate.create();
-
+        String wikiDbQueue = config().getString(CONFIG_DB_QUEUE, "db.queue");
+        dbService = DatabaseService.createProxy(vertx, wikiDbQueue);
         //todo pass through config file
         httpServer = vertx.createHttpServer(
                 new HttpServerOptions()
@@ -62,26 +60,18 @@ public class HttpServerVerticle extends AbstractVerticle {
                 .put("driver_class", config().getString(CONFIG_DB_JDBC_DRIVER_CLASS, "com.mysql.jdbc.Driver"))
                 .put("max_pool_size", config().getInteger(CONFIG_DB_JDBC_MAX_POOL_SIZE, 30)));
         JDBCAuth auth = JDBCAuth.create(vertx, dbClient);
-
         Router router = Router.router(vertx);
-
         router.route().handler(CookieHandler.create());
         router.route().handler(BodyHandler.create());
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
         router.route().handler(UserSessionHandler.create(auth));
         Router apiRouter = Router.router(vertx);
+        UserRouter userRouter = new UserRouter(router, auth, dbService);
         apiRouter.route().handler(JWTAuthHandler.create(jwtAuth, "/api/token"));
         apiRouter.get("/token").handler(context -> {});
         router.get("/*").handler(StaticHandler.create());
-        router.get("/login").handler((r) ->{});
-        router.post("/login-auth").handler(FormLoginHandler.create(auth));
-        router.get("/logout").handler(context -> {
-            context.clearUser();
-            context.response()
-                    .setStatusCode(302)
-                    .putHeader("Location", "/")
-                    .end();
-        });
+
+
         router.route("/eventbus/*").handler(sockJSHandler);
         httpServer
                 .requestHandler(router::accept)
