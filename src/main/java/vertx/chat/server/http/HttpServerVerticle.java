@@ -13,10 +13,9 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vertx.chat.server.database.DatabaseService;
@@ -47,8 +46,7 @@ public class HttpServerVerticle extends AbstractVerticle {
                 .addInboundPermitted(new PermittedOptions().setAddress(inBoundAdress))
                 .addOutboundPermitted(new PermittedOptions().setAddress(outBoundAdress));
         sockJSHandler.bridge(bridgeOptions, event -> {
-//      if (event.type() == BridgeEventType.PUBLISH)
-//        publishEvent(event);
+
         });
 
         JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
@@ -61,15 +59,20 @@ public class HttpServerVerticle extends AbstractVerticle {
                 .put("max_pool_size", config().getInteger(CONFIG_DB_JDBC_MAX_POOL_SIZE, 30)));
         JDBCAuth auth = JDBCAuth.create(vertx, dbClient);
         Router router = Router.router(vertx);
-        router.route().handler(CookieHandler.create());
-        router.route().handler(BodyHandler.create());
-        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
-        router.route().handler(UserSessionHandler.create(auth));
-        Router apiRouter = Router.router(vertx);
-        UserRouter userRouter = new UserRouter(router, auth, dbService);
-        apiRouter.route().handler(JWTAuthHandler.create(jwtAuth, "/api/token"));
-        apiRouter.get("/token").handler(context -> {});
+        UserRouter userRouter = new UserRouter(router, vertx, auth, dbService);
         router.get("/*").handler(StaticHandler.create());
+        router.get("/account").handler((context)-> {
+            context.response().putHeader("Content-type","text/html");
+            context.response().putHeader("Content-Length","1000");
+            context.response().write(context.user().principal().toString());
+            context.response().end();
+
+        });
+
+
+//        Router apiRouter = Router.router(vertx);
+//        apiRouter.route().handler(JWTAuthHandler.create(jwtAuth, "/api/token"));
+//        apiRouter.get("/token").handler(context -> {});
 
 
         router.route("/eventbus/*").handler(sockJSHandler);

@@ -59,7 +59,7 @@ public class MainVerticle extends AbstractVerticle {
           Future<String> httpVerticleDeployment = Future.future();
           vertx.deployVerticle(
                   HttpServerVerticle.class.getName(),
-                  deploymentOptions.setInstances(2),
+                  deploymentOptions.setInstances(1),
                   httpVerticleDeployment.completer());
           return httpVerticleDeployment;
         }).setHandler(ares -> {
