@@ -77,15 +77,9 @@ public class DatabaseVerticleTest {
         String hash = this.auth.computeHash("123", salt);
         Async async = tc.async();
         this.service.createUser("fool",hash, salt,"1@mail.ru", result-> {
-            if (result.succeeded()) {
-                tc.assertTrue(result.result().getBoolean("created"));
-            }
-            else {
-                tc.fail();
-            }
+            tc.assertTrue(result.succeeded());
             async.complete();
         });
-
     }
 
 }

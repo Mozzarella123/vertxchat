@@ -60,7 +60,10 @@ public class HttpServerVerticle extends AbstractVerticle {
         JDBCAuth auth = JDBCAuth.create(vertx, dbClient);
         Router router = Router.router(vertx);
         UserRouter userRouter = new UserRouter(router, vertx, auth, dbService);
-        router.get("/*").handler(StaticHandler.create());
+        StaticHandler staticHandler =  StaticHandler.create().setCachingEnabled(false);
+        router.get("/*").handler(staticHandler);
+        router.get("/login").handler(staticHandler);
+        router.get("/register").handler(staticHandler);
         router.get("/account").handler((context)-> {
             context.response().putHeader("Content-type","text/html");
             context.response().putHeader("Content-Length","1000");

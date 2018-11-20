@@ -1,24 +1,32 @@
 import * as React from 'react';
+import { Switch, Route } from 'react-router-dom'
 import EventBusService from "../network/EventBusService";
 import Chat from "./Chat";
-import Form from './Form'
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
 
 require('./app.scss');
 
-class App extends React.Component<{},{}> {
+class App extends React.Component {
 
   private eventBusService: EventBusService;
-  private isAuthorized : boolean = false;
 
+  constructor(props) {
+    super(props);
+  }
 
   componentDidMount() {
     this.eventBusService = new EventBusService();
-    // this.eventBusService.connect((err, msg) => this.chatMsgRecieved(err, msg));
+
   }
 
 
   render() {
-      return (this.isAuthorized) ?  <Chat/>: <Form/>;
+      return <Switch>
+          <Route exact path='/' component={Chat}/>
+          <Route path='/login' component={LoginForm}/>
+          <Route path='/register' component={RegisterForm}/>
+      </Switch>
   }
 }
 

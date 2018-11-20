@@ -94,14 +94,12 @@ public class DatabaseServiceImpl implements DatabaseService {
             session.save(user);
             tx.commit();
             session.close();
-            response.put("created", true);
             response.put("id", user.getId());
+            resultHandler.handle(Future.succeededFuture(response));
 
         } catch (Exception e){
-            response.put("created", false);
-
+            resultHandler.handle(Future.failedFuture(e));
         }
-        resultHandler.handle(Future.succeededFuture(response));
         return this;
     }
 }

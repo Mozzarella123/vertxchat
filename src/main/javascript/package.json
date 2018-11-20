@@ -20,6 +20,7 @@
     "mobx": "^5.5.0",
     "mobx-react": "^5.2.8",
     "react": "^16.5.2",
+    "react-chat-elements": "^10.1.1",
     "react-dom": "^16.5.2",
     "react-router-dom": "^4.3.1",
     "vertx3-eventbus-client": "^3.5.4"
