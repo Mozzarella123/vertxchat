@@ -7,6 +7,7 @@ import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.sql.SQLClient;
@@ -33,15 +34,15 @@ public class MainVerticle extends AbstractVerticle {
   private final String outBoundAdress = "chat.to.server";
 
   public static void main(String[] args) {
-    new MainVerticle().start(Future.future());
-  }
+    Vertx vertx = Vertx.vertx();
+    vertx.deployVerticle(MainVerticle.class.getName());  }
   @Override
   public void start(Future<Void> startFuture) {
     ConfigStoreOptions fileStore = new ConfigStoreOptions()
       .setType("file")
       .setConfig(new JsonObject().put("path", pathToServerConfig));
     ConfigRetrieverOptions options = new ConfigRetrieverOptions().addStore(fileStore);
-    ConfigRetriever retriever = ConfigRetriever.create(vertx, options);
+    ConfigRetriever retriever = ConfigRetriever.create(this.vertx, options);
     retriever.getConfig(ar -> {
       if (ar.failed()) {
         LOGGER.error("Could not read configuration");

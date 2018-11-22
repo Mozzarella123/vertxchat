@@ -23,6 +23,7 @@ public class UserRouter {
         router.route().handler(UserSessionHandler.create(auth));
         AuthHandler authHandler = RedirectAuthHandler.create(auth, "/login");
         router.route("/").handler(authHandler);
+        router.route("/chat/*").handler(authHandler);
         this.router.post("/login-auth").handler(FormLoginHandler.create(this.auth));
         this.router.post("/register").handler(this::register);
         this.router.get("/logout").handler(context -> {

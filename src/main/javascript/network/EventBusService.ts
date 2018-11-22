@@ -5,10 +5,7 @@ class EventBusService {
 
   connect(handler) {
     this.eventBus = new EventBus("/eventbus");
-    this.eventBus.onopen = () => {
-      console.log("eb open");
-      this.eventBus.registerHandler("chat.to.client", null, handler)
-    }
+    this.eventBus.onopen = handler;
   }
 
 }

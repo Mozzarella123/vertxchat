@@ -6,27 +6,21 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.SelfSignedCertificate;
-import io.vertx.ext.auth.KeyStoreOptions;
 import io.vertx.ext.auth.jdbc.JDBCAuth;
-import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.auth.jwt.JWTAuthOptions;
-import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.handler.sockjs.BridgeOptions;
-import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vertx.chat.server.database.DatabaseService;
+import vertx.chat.server.http.routers.ChatRouter;
 import vertx.chat.server.http.routers.UserRouter;
 
 import static vertx.chat.server.database.DatabaseVerticle.*;
 
 public class HttpServerVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
-    private final String inBoundAdress = "chat.to.server";
-    private final String outBoundAdress = "server.to.chat";
+
     private HttpServer httpServer;
     private DatabaseService dbService;
 
@@ -41,25 +35,16 @@ public class HttpServerVerticle extends AbstractVerticle {
                         .setSsl(true)
                         .setKeyCertOptions(certificate.keyCertOptions())
                         .setTrustOptions(certificate.trustOptions()));
-        SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
-        BridgeOptions bridgeOptions = new BridgeOptions()
-                .addInboundPermitted(new PermittedOptions().setAddress(inBoundAdress))
-                .addOutboundPermitted(new PermittedOptions().setAddress(outBoundAdress));
-        sockJSHandler.bridge(bridgeOptions, event -> {
 
-        });
 
-        JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
-                .setKeyStore(new KeyStoreOptions()
-                        .setPath("src/main/resources/keystore.jceks")
-                        .setType("jceks")
-                        .setPassword("secret")));
-        JDBCClient dbClient = JDBCClient.createShared(vertx, new JsonObject().put("url", config().getString(CONFIG_DB_JDBC_URL, "jdbc:mysql://localhost:3306/testdb"))
+        JDBCClient dbClient = JDBCClient.createShared(vertx,
+                new JsonObject().put("url", config().getString(CONFIG_DB_JDBC_URL, "jdbc:mysql://localhost:3306/testdb"))
                 .put("driver_class", config().getString(CONFIG_DB_JDBC_DRIVER_CLASS, "com.mysql.jdbc.Driver"))
                 .put("max_pool_size", config().getInteger(CONFIG_DB_JDBC_MAX_POOL_SIZE, 30)));
         JDBCAuth auth = JDBCAuth.create(vertx, dbClient);
         Router router = Router.router(vertx);
         UserRouter userRouter = new UserRouter(router, vertx, auth, dbService);
+        ChatRouter chatRouter = new ChatRouter(router, vertx);
         StaticHandler staticHandler =  StaticHandler.create().setCachingEnabled(false);
         router.get("/*").handler(staticHandler);
         router.get("/login").handler(staticHandler);
@@ -72,13 +57,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         });
 
-
-//        Router apiRouter = Router.router(vertx);
-//        apiRouter.route().handler(JWTAuthHandler.create(jwtAuth, "/api/token"));
-//        apiRouter.get("/token").handler(context -> {});
-
-
-        router.route("/eventbus/*").handler(sockJSHandler);
         httpServer
                 .requestHandler(router::accept)
                 .listen(config().getInteger("http.port"), ar -> {
