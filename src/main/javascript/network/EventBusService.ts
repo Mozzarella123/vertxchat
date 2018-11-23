@@ -4,7 +4,7 @@ class EventBusService {
   eventBus: EventBus.EventBus;
 
   connect(handler) {
-    this.eventBus = new EventBus("/eventbus");
+    this.eventBus = new EventBus(window.location.protocol + "//" + window.location.host +"/eventbus");
     this.eventBus.onopen = handler;
   }
 

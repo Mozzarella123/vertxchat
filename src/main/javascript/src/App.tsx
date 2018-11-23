@@ -23,7 +23,7 @@ class App extends React.Component {
 
   render() {
       return <Switch>
-          <Route exact path='/' component={Chat}/>
+          <Route exact path='/' component={Chat} />
           <Route path='/login' component={LoginForm}/>
           <Route path='/register' component={RegisterForm}/>
       </Switch>

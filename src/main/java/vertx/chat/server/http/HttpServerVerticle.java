@@ -49,6 +49,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.get("/*").handler(staticHandler);
         router.get("/login").handler(staticHandler);
         router.get("/register").handler(staticHandler);
+
         router.get("/account").handler((context)-> {
             context.response().putHeader("Content-type","text/html");
             context.response().putHeader("Content-Length","1000");
