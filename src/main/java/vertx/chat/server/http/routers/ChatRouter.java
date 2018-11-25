@@ -2,7 +2,7 @@ package vertx.chat.server.http.routers;
 
 import com.google.gson.Gson;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.Router;
@@ -22,7 +22,7 @@ public class ChatRouter {
     private final String inBoundAdress = "client.to.chat";
     private final String outBoundAdress = "chat.to.client";
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatRouter.class);
-
+    private final Gson gson = new Gson();
     private final Map<String, User> users;
 
     public ChatRouter(Router router, Vertx vertx) {
@@ -34,11 +34,12 @@ public class ChatRouter {
         BridgeOptions bridgeOptions = new BridgeOptions()
                 .addInboundPermitted(new PermittedOptions().setAddress(inBoundAdress))
                 .addOutboundPermitted(new PermittedOptions().setAddress(outBoundAdress))
-                .addOutboundPermitted(new PermittedOptions().setAddressRegex("user\\..+"));
+                .addOutboundPermitted(new PermittedOptions().setAddressRegex("user\\..+"))
+                .addInboundPermitted(new PermittedOptions().setAddressRegex("user\\..+"));
 
         sockJSHandler.bridge(bridgeOptions, event -> {
             switch (event.type()) {
-                case PUBLISH:
+                case SEND:
                     this.publishEvent(event);
                     break;
                 case REGISTER:
@@ -49,6 +50,13 @@ public class ChatRouter {
                     break;
             }
             event.complete(true);
+        });
+        vertx.eventBus().consumer(inBoundAdress, msg -> {
+            switch (msg.headers().get("action")) {
+                case "users":
+                    msg.reply(gson.toJson(this.users.keySet()));
+                    break;
+            }
         });
         router.route("/eventbus/*").handler(sockJSHandler);
     }
@@ -69,21 +77,21 @@ public class ChatRouter {
             Map<String, Object> notice = new TreeMap<>();
             notice.put("type", "connect");
             notice.put("user", username);
-            this.vertx.eventBus().publish(outBoundAdress, new Gson().toJson(notice));
-        } else {
-            this.vertx.eventBus().consumer("user." + username, this::recieveMessage);
+            this.vertx.eventBus().publish(outBoundAdress, gson.toJson(notice));
         }
 
     }
 
-    private void recieveMessage(Message<Object> data) {
-        this.vertx.eventBus().publish(data.address(), data.body());
-    }
-    private void sendMessage(String message, String username) {
-        this.vertx.eventBus().publish("user."+username, message);
-    }
-
     private void publishEvent(BridgeEvent event) {
+        if (event.getRawMessage().getJsonObject("headers").getString("action").equals("message")) {
+            JsonObject body = event.getRawMessage().getJsonObject("body");
+            Map<String, Object> notice = new TreeMap<>();
+            notice.put("from", event.socket().webUser().principal().getString("username"));
+            notice.put("type", "message");
+            notice.put("body", body.getString("body"));
+            this.vertx.eventBus().publish("user." + body.getString("to"), gson.toJson(notice));
+
+        }
     }
 
     public void getToken(RoutingContext context) {

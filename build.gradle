@@ -30,6 +30,7 @@ dependencies {
     compile group: 'io.vertx', name: 'vertx-auth-jdbc', version:  vertxVersion
     compile group: 'io.vertx', name: 'vertx-service-proxy', version:  vertxVersion
     compile group: 'io.vertx', name: 'vertx-web-client', version:  vertxVersion
+    compile group: 'io.vertx', name: 'vertx-mail-client', version:  vertxVersion
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
     compile group: 'com.sun.xml.bind', name: 'jaxb-core', version: '2.3.0'
     compile group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.0'
