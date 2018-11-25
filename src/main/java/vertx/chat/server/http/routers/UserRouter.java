@@ -59,7 +59,7 @@ public class UserRouter {
             if (result.succeeded()) {
                 MailMessage message = new MailMessage();
                 message.setFrom("Another User <chel12331@mail.ru>");
-                message.setTo("Nikita1998_2010@mail.ru");
+                message.setTo(email);
                 message.setText("You've created account: "+ username);
                 mailClient.sendMail(message, res -> {
                     if (!res.succeeded()) {

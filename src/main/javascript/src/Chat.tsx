@@ -15,8 +15,11 @@ export default class Chat extends React.Component {
     @observable token: string;
     @observable currentUser: string;
     private inputMessage: Input;
-    private readonly  addressTo = 'client.to.chat';
+    private inputRef;
+    private readonly addressTo = 'client.to.chat';
     private readonly addressFrom = 'chat.to.client';
+
+
     componentDidMount() {
         this.eventBusService.connect(() => {
 
@@ -43,7 +46,6 @@ export default class Chat extends React.Component {
                         if (!error) {
 
                         }
-                        debugger;
                         const messageJson = JSON.parse(message.body);
                         switch (messageJson.type) {
                             case 'message' : {
@@ -63,7 +65,7 @@ export default class Chat extends React.Component {
                             date: new Date(),
                             unread: 0
                         })));
-                        this.currentUser = this.usersOnlone[0];
+                        this.currentUser = this.usersOnlone[0].title;
                     }));
                 });
 
@@ -74,6 +76,15 @@ export default class Chat extends React.Component {
 
     @action
     messageRecieve(message) {
+        if (message.from === this.token) {
+            this.currentMessages.push({
+                position: 'right',
+                type: 'text',
+                text: message.body,
+                date: new Date(),
+            });
+            return
+        }
         if (message.from === this.currentUser) {
             this.currentMessages.push({
                 position: 'left',
@@ -81,21 +92,30 @@ export default class Chat extends React.Component {
                 text: message.body,
                 date: new Date(),
             });
+            return;
         }
-        else {
 
-        }
     }
+
     @action
     sendMessage(message) {
         const sent = {
-            body : message,
-            to : this.currentUser
+            body: message,
+            to: this.currentUser
         };
-        this.eventBusService.eventBus.send(this.addressTo, sent, {action : 'message'},  (error, message1) => {
-            console.log(message);
+        this.eventBusService.eventBus.send(this.addressTo, sent, {action: 'message'}, (error, response) => {
+            if (error) {
+                throw new Error();
+            }
+            // this.currentMessages.push({
+            //     position: 'right',
+            //     type: 'text',
+            //     text: message,
+            //     date: new Date(),
+            // })
         });
     }
+
     @action
     userConnect(message) {
         console.log(message.user);
@@ -113,29 +133,36 @@ export default class Chat extends React.Component {
     @action
     goToChat(chat) {
         this.currentUser = chat.title;
-
+        this.currentMessages.clear();
     }
+
     onSendClick() {
         const message = this.inputMessage.value;
-        if(message&&message!="") {
+        if (message && message != '') {
             this.sendMessage(message);
+            this.inputRef.clear();
         }
     }
+
     render() {
         return (
             <div style={{'display': 'grid', 'gridTemplateColumns': '1fr 3fr'}}>
+                <SideBar type='light'
+                         top={
+                             <div>
+                                 <span>User : {this.token}</span>
+                                 <a href='/logout'>Logout</a></div>
+
+                         }
+                         center={
+                             <ChatList
+                                 className='chat-list'
+                                 onClick={(chat) => this.goToChat(chat)}
+                                 dataSource={this.usersOnlone.slice()}/>
+                         }
+                />
                 <SideBar
-                    top={
-                        <span>User : {this.token}</span>
-                    }
-                    center={
-                        <ChatList
-                            className='chat-list'
-                            onClick={(chat) => this.goToChat(chat)}
-                            dataSource={this.usersOnlone.slice()}/>
-                    }
-                    bottom={<div>'BOTTOM' area</div>}/>
-                <SideBar
+                    type='light'
                     top={"With: " + this.currentUser}
                     center={<MessageList
                         className='message-list'
@@ -144,12 +171,13 @@ export default class Chat extends React.Component {
                         dataSource={this.currentMessages.slice()}/>}
                     bottom={
                         <Input
-                            inputRef={(ref)=> this.inputMessage = ref}
+                            ref={(input)=>this.inputRef = input}
+                            inputRef={(ref) => this.inputMessage = ref}
                             placeholder="Type here..."
                             multiline={true}
                             rightButtons={
                                 <Button
-                                    onClick={()=>this.onSendClick()}
+                                    onClick={() => this.onSendClick()}
                                     color='white'
                                     backgroundColor='black'
                                     text='Send'/>

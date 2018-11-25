@@ -1,18 +1,20 @@
 import * as React from "react";
+import {Button, Form, FormGroup, Label, Input, FormText} from 'reactstrap';
 
-const LoginForm = (props) => (
-     <form method="POST" action='/login-auth'>
-        <label>
-            Username:
-            <input type="text" name="username" required/>
-        </label>
-        <label>
-            Password:
-            <input type="password" name="password" required/>
-        </label>
-        <input type="hidden" name="return_url" value="/"/>
+const LoginForm = () => (
+    <Form method="POST" action='/login-auth'>
+        <FormGroup>
+            <Label for="username">Username</Label>
+            <Input type="text" name="username" id="username" placeholder="Enter username"/>
+        </FormGroup>
+        <FormGroup>
+            <Label for="password">Password</Label>
+            <Input type="password" name="password" id="password"/>
+        </FormGroup>
 
-        <input type="submit" value="Submit"/>
-    </form>)
+        <Input type="hidden" name="return_url" value="/"/>
+
+        <Button type="submit">Login</Button>
+    </Form>)
 
 export default LoginForm;

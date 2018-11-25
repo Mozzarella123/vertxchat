@@ -56,6 +56,9 @@ public class ChatRouter {
                 case "users":
                     msg.reply(gson.toJson(this.users.keySet()));
                     break;
+                case "message" :
+                    msg.reply(true);
+                    break;
             }
         });
         router.route("/eventbus/*").handler(sockJSHandler);
