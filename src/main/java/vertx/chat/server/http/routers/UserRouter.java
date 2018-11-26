@@ -58,9 +58,10 @@ public class UserRouter {
         dbService.createUser(username, passHash, salt, email, (result) -> {
             if (result.succeeded()) {
                 MailMessage message = new MailMessage();
-                message.setFrom("Another User <chel12331@mail.ru>");
+                message.setFrom("Chat <chel12331@mail.ru>");
+                message.setSubject("Chat registration");
                 message.setTo(email);
-                message.setText("You've created account: "+ username);
+                message.setText("You've created account: " + username);
                 mailClient.sendMail(message, res -> {
                     if (!res.succeeded()) {
                         LOGGER.error("Mail sending failed",res.cause());

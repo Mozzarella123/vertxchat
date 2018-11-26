@@ -56,9 +56,8 @@ public class ChatRouter {
                 case "users":
                     msg.reply(gson.toJson(this.users.keySet()));
                     break;
-                case "message" :
-                    msg.reply(true);
-                    break;
+//                case "message" :
+//                    msg.reply(true);
             }
         });
         router.route("/eventbus/*").handler(sockJSHandler);
@@ -92,8 +91,11 @@ public class ChatRouter {
             notice.put("from", event.socket().webUser().principal().getString("username"));
             notice.put("type", "message");
             notice.put("body", body.getString("body"));
-            this.vertx.eventBus().publish("user." + body.getString("to"), gson.toJson(notice));
 
+            this.vertx.eventBus().publish("user." + body.getString("to"), gson.toJson(notice));
+            if (!event.getRawMessage().getString("replyAddress").equals("")) {
+                event.socket().write( new JsonObject().put("address", event.getRawMessage().getString("replyAddress")).toString());
+            }
         }
     }
 

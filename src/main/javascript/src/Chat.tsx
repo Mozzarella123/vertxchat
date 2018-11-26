@@ -77,13 +77,13 @@ export default class Chat extends React.Component {
     @action
     messageRecieve(message) {
         if (message.from === this.token) {
-            this.currentMessages.push({
-                position: 'right',
-                type: 'text',
-                text: message.body,
-                date: new Date(),
-            });
-            return
+            // this.currentMessages.push({
+            //     position: 'right',
+            //     type: 'text',
+            //     text: message.body,
+            //     date: new Date(),
+            // });
+            return;
         }
         if (message.from === this.currentUser) {
             this.currentMessages.push({
@@ -107,12 +107,13 @@ export default class Chat extends React.Component {
             if (error) {
                 throw new Error();
             }
-            // this.currentMessages.push({
-            //     position: 'right',
-            //     type: 'text',
-            //     text: message,
-            //     date: new Date(),
-            // })
+            console.log('sent success');
+            this.currentMessages.push({
+                position: 'right',
+                type: 'text',
+                text: message,
+                date: new Date(),
+            })
         });
     }
 
